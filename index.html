@@ -556,7 +556,15 @@ function showFullMap(el) {
   document.getElementById('mainScroll').style.display = 'none';
   document.getElementById('fullMapView').classList.add('show');
   adjustLayout();
-  if (!fullMapInitialized) loadFullMap();
+  if (!fullMapInitialized) {
+    loadFullMap();
+  } else {
+    // 이미 초기화됐으면 핀만 새로 추가 (새로 추가된 장소 반영)
+    [28,29,30,31].forEach(day => {
+      const color = dayColors[day];
+      (schedule[day] || []).forEach(p => geocodeAndPin(p.name, p.q, color));
+    });
+  }
 }
 
 function hideFullMap() {
@@ -577,30 +585,49 @@ function loadFullMap() {
 }
 
 const dayColors = {28:'#4f86d9', 29:'#2e9e6b', 30:'#d4860a', 31:'#9b59b6'};
-const dayCoords = {
-  28: [
-    {name:'소테츠 프레사 인 롯폰기', lat:35.6612, lng:139.7296},
-    {name:'츠지한 미드타운', lat:35.6654, lng:139.7303},
-    {name:'도쿄정원미술관', lat:35.6328, lng:139.7179},
-    {name:'즈이쇼지', lat:35.6374, lng:139.7214},
-    {name:'후글렌', lat:35.6687, lng:139.6960},
-    {name:'Dug Jazz Bar', lat:35.6915, lng:139.7047},
-  ],
-  29: [
-    {name:'오니버스 커피', lat:35.6484, lng:139.6994},
-    {name:'PIX 브런치', lat:35.6482, lng:139.7001},
-    {name:'시부야 스크램블', lat:35.6595, lng:139.7005},
-    {name:'메이지신궁', lat:35.6763, lng:139.6993},
-    {name:'이세탄 신주쿠', lat:35.6917, lng:139.7036},
-  ],
-  30: [
-    {name:'아자부다이힐스', lat:35.6574, lng:139.7428},
-  ],
-  31: [
-    {name:'이와사키 저택', lat:35.7084, lng:139.7679},
-    {name:'유라쿠초', lat:35.6752, lng:139.7628},
-  ],
-};
+
+// 핀 SVG 생성
+function makePinSvg(color) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+    <path d="M14 0C6.27 0 0 6.27 0 14c0 9.6 14 22 14 22s14-12.4 14-22C28 6.27 21.73 0 14 0z" fill="${color}" stroke="white" stroke-width="1.5"/>
+    <circle cx="14" cy="14" r="5" fill="white" fill-opacity="0.9"/>
+  </svg>`;
+}
+
+// 핀 추가 함수
+function addPinToMap(name, lat, lng, color) {
+  const shortName = name.replace(/^[^\w가-힣a-zA-Z]+/, ''); // 이모지 제거
+  const label = shortName.length > 6 ? shortName.slice(0,6)+'…' : shortName;
+  new google.maps.Marker({
+    position: {lat, lng},
+    map: gmap,
+    title: name,
+    icon: {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(makePinSvg(color)),
+      scaledSize: new google.maps.Size(28, 36),
+      anchor: new google.maps.Point(14, 36),
+      labelOrigin: new google.maps.Point(14, 46),
+    },
+    label: {text: label, fontSize:'10px', fontWeight:'700', color:'#1c1b18', className:'gmap-label'},
+  });
+}
+
+// schedule에서 모든 장소를 Geocoding으로 핀 추가
+function geocodeAndPin(name, q, color) {
+  // 이동/항공편은 건너뜀
+  const skip = ['인천국제공항','나리타국제공항','인천 출발','나리타 도착','나리타 출발','인천공항 도착'];
+  if (skip.some(s => name.includes(s) || q.includes(s))) return;
+  // 쇼핑타임처럼 q가 없는 것도 건너뜀
+  if (!q || q === '') return;
+
+  const geocoder = new google.maps.Geocoder();
+  geocoder.geocode({address: q, region: 'jp'}, (results, status) => {
+    if (status === 'OK' && results[0]) {
+      const loc = results[0].geometry.location;
+      addPinToMap(name, loc.lat(), loc.lng(), color);
+    }
+  });
+}
 
 window.initFullMap = function() {
   fullMapInitialized = true;
@@ -612,32 +639,11 @@ window.initFullMap = function() {
     fullscreenControl: false,
   });
 
-  // 날짜별 핀 추가
-  Object.entries(dayCoords).forEach(([day, places]) => {
-    const color = dayColors[parseInt(day)];
-    places.forEach(p => {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
-        <path d="M14 0C6.27 0 0 6.27 0 14c0 9.6 14 22 14 22s14-12.4 14-22C28 6.27 21.73 0 14 0z" fill="${color}" stroke="white" stroke-width="1.5"/>
-        <circle cx="14" cy="14" r="5" fill="white" fill-opacity="0.9"/>
-      </svg>`;
-      new google.maps.Marker({
-        position: {lat: p.lat, lng: p.lng},
-        map: gmap,
-        title: p.name,
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-          scaledSize: new google.maps.Size(28, 36),
-          anchor: new google.maps.Point(14, 36),
-          labelOrigin: new google.maps.Point(14, 46),
-        },
-        label: {
-          text: p.name.length > 6 ? p.name.slice(0,6)+'…' : p.name,
-          fontSize: '10px',
-          fontWeight: '700',
-          color: '#1c1b18',
-          className: 'gmap-label',
-        }
-      });
+  // schedule 데이터에서 자동으로 핀 추가 (Geocoding API 사용)
+  [28,29,30,31].forEach(day => {
+    const color = dayColors[day];
+    (schedule[day] || []).forEach(p => {
+      geocodeAndPin(p.name, p.q, color);
     });
   });
 
