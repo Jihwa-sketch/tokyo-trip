@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🗼 도쿄 여행 · 5/28–31</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--white:#fff;--border:#e2e0da;--border-light:#eeece8;
+  --accent:#d94f2b;--text:#1c1b18;--mid:#6b6861;--dim:#a09d97;
+  --sh:0 2px 12px rgba(0,0,0,.09);--sh-lg:0 8px 32px rgba(0,0,0,.15);
+  --d28:#4f86d9;--d29:#2e9e6b;--d30:#d4860a;--d31:#9b59b6;
+}
+html,body{height:100%;overflow:hidden;font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text)}
+
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px 10px}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+.logo span{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);margin-left:8px;letter-spacing:.5px;font-weight:400}
+.members{display:flex;gap:5px}
+.mtag{font-size:10px;padding:3px 9px;border-radius:14px;border:1px solid;font-weight:600}
+.mtag-j{color:#c0421f;border-color:#f2c4b8;background:#fdf2ef}
+.mtag-y{color:#6b3fa0;border-color:#d8c7f0;background:#f5f0fd}
+.mtag-o{color:#a07a10;border-color:#f0dfa0;background:#fdf8e8}
+
+/* DAY TABS */
+.day-tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px}
+.day-tabs::-webkit-scrollbar{display:none}
+.dtab{flex-shrink:0;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;background:var(--bg);color:var(--dim);border:1px solid var(--border);cursor:pointer;transition:all .15s;font-family:'DM Mono',monospace}
+.dtab.active-map{background:#1c1b18;color:white;border-color:#1c1b18}
+.dtab.active-28{background:var(--d28);color:white;border-color:var(--d28)}
+.dtab.active-29{background:var(--d29);color:white;border-color:var(--d29)}
+.dtab.active-30{background:var(--d30);color:white;border-color:var(--d30)}
+.dtab.active-31{background:var(--d31);color:white;border-color:var(--d31)}
+
+/* MAIN */
+.main{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 0 40px}
+.main::-webkit-scrollbar{display:none}
+
+/* DAY STICKY HEADER */
+.day-sticky{position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 16px 6px;display:flex;align-items:center;gap:10px}
+.day-big{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1}
+.day-date-str{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px}
+.day-theme-str{display:none}
+
+.day-sticky.d28 .day-big{color:var(--d28)}
+.day-sticky.d28 .day-date-str{color:var(--d28)}
+.day-sticky.d29 .day-big{color:var(--d29)}
+.day-sticky.d29 .day-date-str{color:var(--d29)}
+.day-sticky.d30 .day-big{color:var(--d30)}
+.day-sticky.d30 .day-date-str{color:var(--d30)}
+.day-sticky.d31 .day-big{color:var(--d31)}
+.day-sticky.d31 .day-date-str{color:var(--d31)}
+
+/* PLACE ITEMS */
+.place-item{margin:0 12px 5px;background:var(--white);border-radius:12px;border:1px solid var(--border-light);display:flex;align-items:stretch;overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;position:relative}
+.place-item:active{transform:scale(.98);opacity:.88}
+.place-item.d28{border-left:3.5px solid var(--d28)}
+.place-item.d29{border-left:3.5px solid var(--d29)}
+.place-item.d30{border-left:3.5px solid var(--d30)}
+.place-item.d31{border-left:3.5px solid var(--d31)}
+
+.pi-time{width:46px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 4px;background:var(--bg);border-right:1px solid var(--border-light)}
+.pi-time-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--mid);line-height:1.2;text-align:center}
+
+.pi-body{flex:1;padding:11px 12px;min-width:0}
+.pi-name{font-size:14px;font-weight:600;line-height:1.3;margin-bottom:2px}
+.pi-sub{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.pi-right{display:flex;align-items:center;padding:0 10px;gap:8px}
+.pi-edit{background:none;border:none;cursor:pointer;font-size:16px;color:var(--dim);padding:4px;border-radius:6px;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.pi-edit:active{background:var(--bg);color:var(--text)}
+.pi-arrow{color:var(--dim);font-size:18px;font-weight:300}
+
+/* SHEET */
+.map-sheet{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--white);border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;max-height:88vh}
+.map-sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 0;flex-shrink:0}
+.sheet-head{padding:12px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.sheet-info{flex:1;min-width:0;margin-right:10px}
+.sheet-name{font-size:17px;font-weight:700;line-height:1.3;margin-bottom:5px}
+.sheet-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-bottom:6px}
+.sheet-desc{font-size:12px;color:var(--mid);line-height:1.5;padding:8px 10px;background:var(--bg);border-radius:8px}
+.sheet-close{background:none;border:none;cursor:pointer;font-size:22px;color:var(--dim);padding:0;flex-shrink:0;margin-top:-2px}
+.sheet-map{flex:1;min-height:220px;position:relative}
+#mobileMap{width:100%;height:100%;border:none;display:block}
+.sheet-actions{padding:12px 16px 20px;display:flex;gap:8px;flex-shrink:0;border-top:1px solid var(--border-light)}
+.sab{flex:1;padding:12px;border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .12s}
+.sab-dark{background:#1c1b18;color:white}
+.sab-ghost{background:none;border:1.5px solid var(--border);color:var(--mid)}
+
+/* DIM */
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:190;display:none;backdrop-filter:blur(2px)}
+.dim.on{display:block}
+
+/* EDIT SHEET */
+.edit-sheet{position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--white);border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding:0 0 30px}
+.edit-sheet.open{transform:translateY(0)}
+.edit-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 14px}
+.edit-title{font-size:15px;font-weight:700;padding:0 16px 14px;border-bottom:1px solid var(--border-light)}
+.edit-body{padding:16px}
+.ef{margin-bottom:14px}
+.ef label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:5px}
+.ef input,.ef textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none}
+.ef input:focus,.ef textarea:focus{border-color:var(--accent);background:#fff}
+.ef textarea{resize:none;height:56px}
+.edit-actions{padding:0 16px;display:flex;gap:8px}
+.edit-actions .sab{padding:12px}
+.sab-red{background:var(--accent);color:white}
+.sab-danger{background:none;border:1.5px solid #f2c4b8;color:#c0421f}
+
+/* FULL MAP */
+.full-map-view{position:fixed;top:0;bottom:0;left:0;right:0;z-index:50;display:none}
+.full-map-view.show{display:block}
+#fullMap{width:100%;height:100%;border:none}
+
+/* PIN LEGEND */
+.map-legend{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;padding:6px 14px;display:flex;gap:12px;font-size:11px;white-space:nowrap;box-shadow:var(--sh)}
+.leg-item{display:flex;align-items:center;gap:5px;font-weight:600}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+</style>
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">TOKYO 🗼<span>MAY 28–31</span></div>
+    <div class="members">
+      <span class="mtag mtag-j">져니</span>
+      <span class="mtag mtag-y">예예</span>
+      <span class="mtag mtag-o">오브</span>
+    </div>
+  </div>
+  <div class="day-tabs">
+    <div class="dtab" id="tab-map" onclick="showFullMap(this)">🗺️ 전체</div>
+    <div class="dtab active-28" id="tab-28" onclick="switchDay(28,this)">5/28 목</div>
+    <div class="dtab" id="tab-29" onclick="switchDay(29,this)">5/29 금</div>
+    <div class="dtab" id="tab-30" onclick="switchDay(30,this)">5/30 토</div>
+    <div class="dtab" id="tab-31" onclick="switchDay(31,this)">5/31 일</div>
+  </div>
+</div>
+
+<!-- 전체 지도 뷰 -->
+<div class="full-map-view" id="fullMapView">
+  <div id="fullMap"></div>
+
+</div>
+
+<!-- 메인 스크롤 -->
+<div class="main" id="mainScroll">
+
+  <!-- 28일 -->
+  <div class="day-sticky d28" id="anchor-28">
+    <div class="day-big">28</div>
+    <div><div class="day-date-str">5/28 · 목요일</div><div class="day-theme-str">도착 · 롯폰기</div></div>
+  </div>
+  <div id="section-28"></div>
+
+  <!-- 29일 -->
+  <div class="day-sticky d29" id="anchor-29">
+    <div class="day-big">29</div>
+    <div><div class="day-date-str">5/29 · 금요일</div><div class="day-theme-str">카페 · 시부야 · 신주쿠</div></div>
+  </div>
+  <div id="section-29"></div>
+
+  <!-- 30일 -->
+  <div class="day-sticky d30" id="anchor-30">
+    <div class="day-big">30</div>
+    <div><div class="day-date-str">5/30 · 토요일</div><div class="day-theme-str">아자부다이힐스 · 쇼핑</div></div>
+  </div>
+  <div id="section-30"></div>
+
+  <!-- 31일 -->
+  <div class="day-sticky d31" id="anchor-31">
+    <div class="day-big">31</div>
+    <div><div class="day-date-str">5/31 · 일요일</div><div class="day-theme-str">이와사키 · 유라쿠초 · 귀국</div></div>
+  </div>
+  <div id="section-31"></div>
+
+</div>
+
+<!-- 딤 -->
+<div class="dim" id="dim" onclick="closeDim()"></div>
+
+<!-- 지도 바텀시트 -->
+<div class="map-sheet" id="mapSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <div class="sheet-info">
+      <div class="sheet-name" id="sheetName"></div>
+      <div class="sheet-time" id="sheetTime"></div>
+      <div class="sheet-desc" id="sheetDesc"></div>
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sheet-map">
+    <iframe id="mobileMap" src="" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <div class="sheet-actions">
+    <button class="sab sab-dark" onclick="openGoogleMaps()">구글맵에서 열기 ↗</button>
+    <button class="sab sab-ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+
+<!-- 수정 시트 -->
+<div class="edit-sheet" id="editSheet">
+  <div class="edit-handle"></div>
+  <div class="edit-title" id="editTitle">일정 수정</div>
+  <div class="edit-body">
+    <div class="ef"><label>장소명</label><input id="eName" type="text"></div>
+    <div class="ef"><label>시간</label><input id="eTime" type="time"></div>
+    <div class="ef"><label>메모</label><textarea id="eDesc"></textarea></div>
+  </div>
+  <div class="edit-actions">
+    <button class="sab sab-red" onclick="saveEdit()">저장</button>
+    <button class="sab sab-danger" onclick="deleteItem()">🗑 삭제</button>
+    <button class="sab sab-ghost" onclick="closeEdit()">취소</button>
+  </div>
+</div>
+
+<script>
+// ── 데이터 ──
+const defaultSchedule = {
+  28: [
+    {id:'d28-1', time:'08:50', name:'✈️ 인천 출발',          desc:'에어프레미아 · ICN→NRT', q:'인천국제공항', gmap:'https://maps.app.goo.gl/UuaVkqeCq6h2QviNA'},
+    {id:'d28-2', time:'11:20', name:'🛬 나리타 도착',         desc:'입국 + 호텔 이동', q:'나리타국제공항', gmap:'https://maps.app.goo.gl/UuaVkqeCq6h2QviNA'},
+    {id:'d28-3', time:'14:00', name:'🏨 소테츠 프레사 인 도쿄-롯폰기', desc:'체크인 · 숙소', q:'Sotetsu Fresa Inn Tokyo-Roppongi', gmap:'https://maps.app.goo.gl/UuaVkqeCq6h2QviNA'},
+    {id:'d28-4', time:'15:00', name:'🍱 츠지한 미드타운점',   desc:'도쿄 미드타운 · 식사', q:'Tsujihan Tokyo Midtown', gmap:'https://maps.app.goo.gl/kHBgeh3X5E26GD3MA'},
+    {id:'d28-5', time:'16:30', name:'🏛️ 도쿄정원미술관',     desc:'아르데코 건축 + 전시', q:'Tokyo Metropolitan Teien Art Museum', gmap:'https://maps.app.goo.gl/W5Te2zo7rpF3uoKa7'},
+    {id:'d28-6', time:'18:00', name:'⛩️ 즈이쇼지',           desc:'쿠마켄고 설계 절', q:'瑞聖寺 Shirokanedai Tokyo', gmap:'https://maps.app.goo.gl/zsfAXB7b8w3HdPo19'},
+    {id:'d28-7', time:'19:00', name:'☕ 후글렌',              desc:'노르웨이 커피 · 나카메구로', q:'Fuglen Tokyo Tomigaya', gmap:'https://maps.app.goo.gl/LuFsPfB8yu3TVogKA'},
+    {id:'d28-8', time:'20:00', name:'🎷 Dug Jazz Bar',        desc:'재즈바 · 6월 폐점 예정!', q:'Dug Jazz Bar Shinjuku Tokyo', gmap:'https://maps.app.goo.gl/LCzgwy8p7sUcDdjD8'},
+  ],
+  29: [
+    {id:'d29-1', time:'10:00', name:'☕ 오니버스 커피',       desc:'나카메구로 · 오픈런 추천', q:'Onibus Coffee Nakameguro Tokyo', gmap:'https://maps.app.goo.gl/mmaipjThijFKM1jR7'},
+    {id:'d29-2', time:'11:00', name:'🥐 PIX 브런치',          desc:'오믈렛, 잠봉뵈르', q:'PIX Cafe Nakameguro Tokyo', gmap:'https://maps.app.goo.gl/cZ23P4cwK3qLhASt8'},
+    {id:'d29-3', time:'12:30', name:'🚶 시부야 스크램블',     desc:'가운데서 사진!', q:'Shibuya Scramble Crossing Tokyo', gmap:'https://maps.app.goo.gl/ANkrtcasAseJtYs66'},
+    {id:'d29-4', time:'13:30', name:'⛩️ 메이지신궁',          desc:'요요기공원 옆 · 산책', q:'Meiji Jingu Tokyo', gmap:'https://maps.app.goo.gl/saGYa8mQomDu9Rhp6'},
+    {id:'d29-5', time:'15:00', name:'🛍️ 이세탄 신주쿠',      desc:'신주쿠 쇼핑', q:'Isetan Shinjuku Tokyo', gmap:'https://maps.app.goo.gl/Mhr2oWnhncrTkCcQ8'},
+    {id:'d29-6', time:'18:00', name:'🍽️ 하우스',              desc:'저녁 식사', q:'House restaurant Shinjuku Tokyo', gmap:''},
+  ],
+  30: [
+    {id:'d30-1', time:'10:00', name:'🗼 도쿄타워 전망대·아자부다이힐스', desc:'도쿄타워뷰 · 롯폰기 도보', q:'Azabudai Hills Tokyo Tower', gmap:'https://maps.app.goo.gl/7tcYfPFeDzoUbKTS8'},
+    {id:'d30-2', time:'11:00', name:'🛍️ 각자 쇼핑타임',      desc:'자유 쇼핑', q:'Ginza shopping Tokyo', gmap:''},
+    {id:'d30-3', time:'20:00', name:'🍖 와라야키야',           desc:'저녁 식사', q:'藁焼きや Tokyo', gmap:'https://maps.app.goo.gl/yojy9pvz8J9Y2pHv9'},
+  ],
+  31: [
+    {id:'d31-1', time:'10:00', name:'🏯 이와사키 저택 정원',  desc:'건축+인테리어 · 일본 부잣집', q:'旧岩崎邸庭園 Yushima Tokyo', gmap:'https://maps.app.goo.gl/mn5NXkiZNs99WSnf6'},
+    {id:'d31-2', time:'11:30', name:'🏙️ 유라쿠초 산책',      desc:'마루노우치 묶음', q:'Yurakucho Tokyo', gmap:'https://maps.app.goo.gl/amcLh23QSVmYuefD7'},
+    {id:'d31-3', time:'17:40', name:'✈️ 나리타 출발',         desc:'에어프레미아 NRT→ICN', q:'나리타국제공항', gmap:''},
+    {id:'d31-4', time:'20:25', name:'🛬 인천공항 도착',        desc:'여행 끝!', q:'인천국제공항', gmap:''},
+  ],
+};
+
+const dayColor = {28:'var(--d28)',29:'var(--d29)',30:'var(--d30)',31:'var(--d31)'};
+let currentId = null, currentEditId = null, currentEditDay = null;
+let isFullMap = false;
+
+// ── Firebase 초기화 ──
+const firebaseConfig = {
+  apiKey: "AIzaSyCTm6v4jxC2FZi89M6aZp8kwosNmPDV2EU",
+  authDomain: "tokyo-trip-2db28.firebaseapp.com",
+  databaseURL: "https://tokyo-trip-2db28-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tokyo-trip-2db28",
+  storageBucket: "tokyo-trip-2db28.firebasestorage.app",
+  messagingSenderId: "486102507760",
+  appId: "1:486102507760:web:925271b5f25c44777de235"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const scheduleRef = db.ref('schedule');
+
+// 로딩 상태 표시
+let schedule = {};
+let isLoaded = false;
+
+function showLoading(show) {
+  let el = document.getElementById('loadingBar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loadingBar';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);z-index:999;transition:opacity .4s';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = show ? '1' : '0';
+}
+
+// Firebase 실시간 리스너 — 다른 사람이 수정하면 자동 반영
+scheduleRef.on('value', snapshot => {
+  const data = snapshot.val();
+  if (data) {
+    // Firebase 데이터 파싱 (object → array 변환)
+    schedule = {};
+    [28,29,30,31].forEach(d => {
+      if (data[d]) {
+        // Firebase는 배열을 object로 저장하므로 values로 변환
+        schedule[d] = Object.values(data[d]).sort((a,b) => a.time.localeCompare(b.time));
+      } else {
+        schedule[d] = [];
+      }
+    });
+  } else {
+    // 첫 실행: 기본 데이터를 Firebase에 업로드
+    schedule = JSON.parse(JSON.stringify(defaultSchedule));
+    saveAllToFirebase();
+  }
+  if (!isLoaded) {
+    isLoaded = true;
+    adjustLayout();
+    renderAll();
+  } else {
+    renderAll();
+  }
+  showLoading(false);
+});
+showLoading(true);
+
+// 전체 schedule을 Firebase에 저장
+function saveAllToFirebase() {
+  const data = {};
+  [28,29,30,31].forEach(d => {
+    data[d] = {};
+    (schedule[d] || []).forEach(p => { data[d][p.id] = p; });
+  });
+  scheduleRef.set(data);
+}
+
+// 특정 날짜 하루만 Firebase에 저장
+function saveDayToFirebase(day) {
+  const data = {};
+  (schedule[day] || []).forEach(p => { data[p.id] = p; });
+  scheduleRef.child(String(day)).set(data);
+}
+
+// ── 렌더링 ──
+function renderAll() {
+  [28,29,30,31].forEach(d => renderDay(d));
+}
+
+function renderDay(d) {
+  const sec = document.getElementById('section-' + d);
+  if (!sec) return;
+  sec.innerHTML = '';
+  (schedule[d] || []).forEach(p => {
+    const div = document.createElement('div');
+    div.className = `place-item d${d}`;
+    div.id = 'item-' + p.id;
+    div.innerHTML = `
+      <div class="pi-time"><div class="pi-time-val">${p.time}</div></div>
+      <div class="pi-body" onclick="openSheet('${p.id}',${d})">
+        <div class="pi-name">${p.name}</div>
+        <div class="pi-sub">${p.desc}</div>
+      </div>
+      <div class="pi-right">
+        <button class="pi-edit" onclick="event.stopPropagation();openEdit('${p.id}',${d})" title="수정">✏️</button>
+        <span class="pi-arrow" onclick="openSheet('${p.id}',${d})">›</span>
+      </div>`;
+    sec.appendChild(div);
+  });
+}
+
+// ── 지도 시트 ──
+function openSheet(id, day) {
+  const items = schedule[day] || [];
+  const p = items.find(x => x.id === id);
+  if (!p) return;
+  currentId = id;
+
+  document.getElementById('sheetName').textContent = p.name;
+  document.getElementById('sheetTime').textContent = `${['','5/28 목','5/29 금','5/30 토','5/31 일'][day-27]} · ${p.time}`;
+  document.getElementById('sheetDesc').textContent = p.desc;
+
+  const q = encodeURIComponent(p.q || p.name + ' Tokyo');
+  document.getElementById('mobileMap').src = `https://maps.google.com/maps?q=${q}&output=embed&hl=ko&z=16`;
+
+  document.getElementById('mapSheet').classList.add('open');
+  document.getElementById('dim').classList.add('on');
+  // gmap 저장
+  document.getElementById('mapSheet').dataset.gmap = p.gmap || '';
+  document.getElementById('mapSheet').dataset.q = p.q || p.name;
+}
+
+function closeSheet() {
+  document.getElementById('mapSheet').classList.remove('open');
+  if (!document.getElementById('editSheet').classList.contains('open'))
+    document.getElementById('dim').classList.remove('on');
+  setTimeout(() => document.getElementById('mobileMap').src = '', 350);
+  currentId = null;
+}
+
+function openGoogleMaps() {
+  const gmap = document.getElementById('mapSheet').dataset.gmap;
+  const q = document.getElementById('mapSheet').dataset.q;
+  if (gmap) window.open(gmap, '_blank');
+  else window.open(`https://www.google.com/maps/search/${encodeURIComponent(q)}`, '_blank');
+}
+
+function closeDim() {
+  closeSheet();
+  closeEdit();
+}
+
+// ── 수정 시트 ──
+function openEdit(id, day) {
+  const items = schedule[day] || [];
+  const p = items.find(x => x.id === id);
+  if (!p) return;
+  currentEditId = id;
+  currentEditDay = day;
+
+  document.getElementById('editTitle').textContent = p.name;
+  document.getElementById('eName').value = p.name;
+  document.getElementById('eTime').value = p.time;
+  document.getElementById('eDesc').value = p.desc;
+
+  document.getElementById('editSheet').classList.add('open');
+  document.getElementById('dim').classList.add('on');
+}
+
+function closeEdit() {
+  document.getElementById('editSheet').classList.remove('open');
+  document.getElementById('dim').classList.remove('on');
+  currentEditId = null; currentEditDay = null;
+}
+
+function saveEdit() {
+  if (!currentEditId || !currentEditDay) return;
+  const items = schedule[currentEditDay];
+  const p = items.find(x => x.id === currentEditId);
+  if (!p) return;
+  p.name = document.getElementById('eName').value.trim() || p.name;
+  p.time = document.getElementById('eTime').value || p.time;
+  p.desc = document.getElementById('eDesc').value.trim();
+  schedule[currentEditDay].sort((a,b) => a.time.localeCompare(b.time));
+  saveDayToFirebase(currentEditDay); // Firebase 저장
+  renderDay(currentEditDay);
+  closeEdit();
+  showToast('저장됐어요 ✓');
+}
+
+function deleteItem() {
+  if (!currentEditId || !currentEditDay) return;
+  const p = schedule[currentEditDay].find(x => x.id === currentEditId);
+  if (!confirm(`"${p?.name}" 을 삭제할까요?`)) return;
+  schedule[currentEditDay] = schedule[currentEditDay].filter(x => x.id !== currentEditId);
+  scheduleRef.child(String(currentEditDay)).child(currentEditId).remove(); // Firebase 삭제
+  renderDay(currentEditDay);
+  closeEdit();
+  showToast('삭제됐어요');
+}
+
+// ── 날짜 탭 ──
+let currentDay = 28;
+function switchDay(day, el) {
+  hideFullMap();
+  document.querySelectorAll('.dtab').forEach(t => t.className = 'dtab');
+  el.className = `dtab active-${day}`;
+  currentDay = day;
+  const anchor = document.getElementById('anchor-' + day);
+  if (anchor) {
+    const main = document.getElementById('mainScroll');
+    main.scrollTo({ top: anchor.offsetTop - 4, behavior: 'smooth' });
+  }
+}
+
+// ── 전체 지도 ──
+let fullMapInitialized = false;
+let gmap = null;
+
+function showFullMap(el) {
+  document.querySelectorAll('.dtab').forEach(t => t.className = 'dtab');
+  el.className = 'dtab active-map';
+  isFullMap = true;
+  document.getElementById('mainScroll').style.display = 'none';
+  document.getElementById('fullMapView').classList.add('show');
+  adjustLayout();
+  if (!fullMapInitialized) loadFullMap();
+}
+
+function hideFullMap() {
+  isFullMap = false;
+  document.getElementById('mainScroll').style.display = '';
+  document.getElementById('fullMapView').classList.remove('show');
+}
+
+function loadFullMap() {
+  if (typeof google === 'undefined') {
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&language=ko&callback=initFullMap`;
+    s.async = true;
+    document.head.appendChild(s);
+  } else {
+    initFullMap();
+  }
+}
+
+const dayColors = {28:'#4f86d9', 29:'#2e9e6b', 30:'#d4860a', 31:'#9b59b6'};
+const dayCoords = {
+  28: [
+    {name:'소테츠 프레사 인 롯폰기', lat:35.6612, lng:139.7296},
+    {name:'츠지한 미드타운', lat:35.6654, lng:139.7303},
+    {name:'도쿄정원미술관', lat:35.6328, lng:139.7179},
+    {name:'즈이쇼지', lat:35.6374, lng:139.7214},
+    {name:'후글렌', lat:35.6687, lng:139.6960},
+    {name:'Dug Jazz Bar', lat:35.6915, lng:139.7047},
+  ],
+  29: [
+    {name:'오니버스 커피', lat:35.6484, lng:139.6994},
+    {name:'PIX 브런치', lat:35.6482, lng:139.7001},
+    {name:'시부야 스크램블', lat:35.6595, lng:139.7005},
+    {name:'메이지신궁', lat:35.6763, lng:139.6993},
+    {name:'이세탄 신주쿠', lat:35.6917, lng:139.7036},
+  ],
+  30: [
+    {name:'아자부다이힐스', lat:35.6574, lng:139.7428},
+  ],
+  31: [
+    {name:'이와사키 저택', lat:35.7084, lng:139.7679},
+    {name:'유라쿠초', lat:35.6752, lng:139.7628},
+  ],
+};
+
+window.initFullMap = function() {
+  fullMapInitialized = true;
+  gmap = new google.maps.Map(document.getElementById('fullMap'), {
+    center: {lat:35.672, lng:139.730},
+    zoom: 12,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+  });
+
+  // 날짜별 핀 추가
+  Object.entries(dayCoords).forEach(([day, places]) => {
+    const color = dayColors[parseInt(day)];
+    places.forEach(p => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+        <path d="M14 0C6.27 0 0 6.27 0 14c0 9.6 14 22 14 22s14-12.4 14-22C28 6.27 21.73 0 14 0z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="5" fill="white" fill-opacity="0.9"/>
+      </svg>`;
+      new google.maps.Marker({
+        position: {lat: p.lat, lng: p.lng},
+        map: gmap,
+        title: p.name,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+          scaledSize: new google.maps.Size(28, 36),
+          anchor: new google.maps.Point(14, 36),
+          labelOrigin: new google.maps.Point(14, 46),
+        },
+        label: {
+          text: p.name.length > 6 ? p.name.slice(0,6)+'…' : p.name,
+          fontSize: '10px',
+          fontWeight: '700',
+          color: '#1c1b18',
+          className: 'gmap-label',
+        }
+      });
+    });
+  });
+
+  // 범례
+  const legend = document.createElement('div');
+  legend.style.cssText = 'background:rgba(255,255,255,.92);border-radius:14px;padding:6px 12px;margin:0 10px 10px;display:flex;gap:10px;font-size:11px;font-weight:700;font-family:Noto Sans KR,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.12)';
+  legend.innerHTML = Object.entries(dayColors).map(([d,c])=>
+    `<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block"></span>${d}일</span>`
+  ).join('');
+  gmap.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(legend);
+};
+
+// 스크롤 탭 동기화
+const mainEl = document.getElementById('mainScroll');
+mainEl.addEventListener('scroll', () => {
+  if (isFullMap) return;
+  const sy = mainEl.scrollTop;
+  [28,29,30,31].forEach(d => {
+    const el = document.getElementById('anchor-'+d);
+    if (el && el.offsetTop <= sy + 60) {
+      document.querySelectorAll('.dtab').forEach(t => t.className='dtab');
+      document.getElementById('tab-'+d).className = `dtab active-${d}`;
+    }
+  });
+}, {passive:true});
+
+// 헤더 높이에 맞게 top 동적 조정
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#1c1b18;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:500;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(60px)';
+  }, 2000);
+}
+
+function adjustLayout() {
+  const h = document.querySelector('.header').offsetHeight;
+  document.getElementById('mainScroll').style.top = h + 'px';
+  document.getElementById('fullMapView').style.top = h + 'px';
+}
+window.addEventListener('resize', adjustLayout);
+adjustLayout();
+
+// 초기 렌더는 Firebase 리스너가 처리
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZixrHy45xVMQxzSEF56qpsiJdoXQLjRg&libraries=places&language=ko&callback=initFullMap&v=beta" async defer></script>
+</body>
+</html>
