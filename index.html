@@ -98,6 +98,14 @@ html,body{height:100%;overflow:hidden;font-family:'Noto Sans KR',sans-serif;back
 
 /* EDIT SHEET */
 .edit-sheet{position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--white);border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding:0 0 30px}
+/* 날짜 헤더 + 버튼 */
+.day-sticky{justify-content:space-between}
+.day-sticky-left{display:flex;align-items:center;gap:10px}
+.day-add-btn{width:30px;height:30px;border-radius:50%;border:none;background:var(--accent);color:white;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(217,79,43,.35);transition:all .15s;-webkit-tap-highlight-color:transparent}
+.day-add-btn:active{transform:scale(.9)}
+/* 추가 시트 — 수정 시트와 동일 스타일 공유 */
+.add-sheet{position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--white);border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding:0 0 30px}
+.add-sheet.open{transform:translateY(0)}
 .edit-sheet.open{transform:translateY(0)}
 .edit-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 14px}
 .edit-title{font-size:15px;font-weight:700;padding:0 16px 14px;border-bottom:1px solid var(--border-light)}
@@ -157,29 +165,41 @@ html,body{height:100%;overflow:hidden;font-family:'Noto Sans KR',sans-serif;back
 
   <!-- 28일 -->
   <div class="day-sticky d28" id="anchor-28">
+    <div class="day-sticky-left">
     <div class="day-big">28</div>
     <div><div class="day-date-str">5/28 · 목요일</div><div class="day-theme-str">도착 · 롯폰기</div></div>
+    </div>
+    <button class="day-add-btn" onclick="openAdd(28)" title="일정 추가">＋</button>
   </div>
   <div id="section-28"></div>
 
   <!-- 29일 -->
   <div class="day-sticky d29" id="anchor-29">
+    <div class="day-sticky-left">
     <div class="day-big">29</div>
     <div><div class="day-date-str">5/29 · 금요일</div><div class="day-theme-str">카페 · 시부야 · 신주쿠</div></div>
+    </div>
+    <button class="day-add-btn" onclick="openAdd(29)" title="일정 추가">＋</button>
   </div>
   <div id="section-29"></div>
 
   <!-- 30일 -->
   <div class="day-sticky d30" id="anchor-30">
+    <div class="day-sticky-left">
     <div class="day-big">30</div>
     <div><div class="day-date-str">5/30 · 토요일</div><div class="day-theme-str">아자부다이힐스 · 쇼핑</div></div>
+    </div>
+    <button class="day-add-btn" onclick="openAdd(30)" title="일정 추가">＋</button>
   </div>
   <div id="section-30"></div>
 
   <!-- 31일 -->
   <div class="day-sticky d31" id="anchor-31">
+    <div class="day-sticky-left">
     <div class="day-big">31</div>
     <div><div class="day-date-str">5/31 · 일요일</div><div class="day-theme-str">이와사키 · 유라쿠초 · 귀국</div></div>
+    </div>
+    <button class="day-add-btn" onclick="openAdd(31)" title="일정 추가">＋</button>
   </div>
   <div id="section-31"></div>
 
@@ -221,6 +241,22 @@ html,body{height:100%;overflow:hidden;font-family:'Noto Sans KR',sans-serif;back
     <button class="sab sab-red" onclick="saveEdit()">저장</button>
     <button class="sab sab-danger" onclick="deleteItem()">🗑 삭제</button>
     <button class="sab sab-ghost" onclick="closeEdit()">취소</button>
+  </div>
+</div>
+
+<!-- 추가 시트 -->
+<div class="add-sheet" id="addSheet">
+  <div class="edit-handle"></div>
+  <div class="edit-title" id="addTitle">일정 추가</div>
+  <div class="edit-body">
+    <div class="ef"><label>장소명</label><input id="aName" type="text" placeholder="예: 블루노트 도쿄"></div>
+    <div class="ef"><label>시간</label><input id="aTime" type="time" value="12:00"></div>
+    <div class="ef"><label>메모</label><textarea id="aDesc" placeholder="예: 예약 필요, 오픈런 추천..."></textarea></div>
+    <div class="ef"><label>구글맵 링크 (선택)</label><input id="aGmap" type="url" placeholder="https://maps.app.goo.gl/..."></div>
+  </div>
+  <div class="edit-actions">
+    <button class="sab sab-red" onclick="confirmAdd()">추가</button>
+    <button class="sab sab-ghost" onclick="closeAdd()">취소</button>
   </div>
 </div>
 
@@ -404,6 +440,7 @@ function openGoogleMaps() {
 function closeDim() {
   closeSheet();
   closeEdit();
+  closeAdd();
 }
 
 // ── 수정 시트 ──
@@ -453,6 +490,45 @@ function deleteItem() {
   renderDay(currentEditDay);
   closeEdit();
   showToast('삭제됐어요');
+}
+
+// ── 장소 추가 ──
+let addTargetDay = null;
+
+function openAdd(day) {
+  addTargetDay = day;
+  const dayNames = {28:'5/28 목요일', 29:'5/29 금요일', 30:'5/30 토요일', 31:'5/31 일요일'};
+  document.getElementById('addTitle').textContent = `+ ${dayNames[day]} 일정 추가`;
+  document.getElementById('aName').value = '';
+  document.getElementById('aTime').value = '12:00';
+  document.getElementById('aDesc').value = '';
+  document.getElementById('aGmap').value = '';
+  document.getElementById('addSheet').classList.add('open');
+  document.getElementById('dim').classList.add('on');
+  setTimeout(() => document.getElementById('aName').focus(), 350);
+}
+
+function closeAdd() {
+  document.getElementById('addSheet').classList.remove('open');
+  document.getElementById('dim').classList.remove('on');
+  addTargetDay = null;
+}
+
+function confirmAdd() {
+  const name = document.getElementById('aName').value.trim();
+  if (!name) { showToast('장소명을 입력해주세요'); return; }
+  const time = document.getElementById('aTime').value || '00:00';
+  const desc = document.getElementById('aDesc').value.trim();
+  const gmap = document.getElementById('aGmap').value.trim();
+  const id = 'd' + addTargetDay + '-' + Date.now();
+  const newItem = { id, time, name, desc, q: name + ' Tokyo', gmap };
+  if (!schedule[addTargetDay]) schedule[addTargetDay] = [];
+  schedule[addTargetDay].push(newItem);
+  schedule[addTargetDay].sort((a,b) => a.time.localeCompare(b.time));
+  saveDayToFirebase(addTargetDay);
+  renderDay(addTargetDay);
+  closeAdd();
+  showToast(`"${name}" 추가됐어요 📍`);
 }
 
 // ── 날짜 탭 ──
