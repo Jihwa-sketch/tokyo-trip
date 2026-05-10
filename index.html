@@ -58,6 +58,14 @@ html,body{height:100%;overflow:hidden;font-family:'Noto Sans KR',sans-serif;back
 /* PLACE ITEMS */
 .place-item{margin:0 12px 5px;background:var(--white);border-radius:12px;border:1px solid var(--border-light);display:flex;align-items:stretch;overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;position:relative}
 .place-item:active{transform:scale(.98);opacity:.88}
+.place-item.dragging{opacity:.35;transform:scale(.97);box-shadow:none;pointer-events:none}
+.place-item.drag-over-top{border-top:3px solid var(--accent)!important}
+.place-item.drag-over-bottom{border-bottom:3px solid var(--accent)!important}
+.drag-ghost{position:fixed;z-index:999;pointer-events:none;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:.92;transform:scale(1.03);transition:none;background:var(--white)}
+.section-drag-over{background:rgba(217,79,43,.04);border-radius:8px}
+/* 드래그 핸들 */
+.pi-drag{display:flex;align-items:center;padding:0 8px;color:var(--border);font-size:18px;cursor:grab;-webkit-tap-highlight-color:transparent;touch-action:none}
+.pi-drag:active{cursor:grabbing;color:var(--dim)}
 .place-item.d28{border-left:3.5px solid var(--d28)}
 .place-item.d29{border-left:3.5px solid var(--d29)}
 .place-item.d30{border-left:3.5px solid var(--d30)}
@@ -387,7 +395,10 @@ function renderDay(d) {
     const div = document.createElement('div');
     div.className = `place-item d${d}`;
     div.id = 'item-' + p.id;
+    div.dataset.id = p.id;
+    div.dataset.day = d;
     div.innerHTML = `
+      <div class="pi-drag" title="꾹 눌러서 이동">⠿</div>
       <div class="pi-time"><div class="pi-time-val">${p.time}</div></div>
       <div class="pi-body" onclick="openSheet('${p.id}',${d})">
         <div class="pi-name">${p.name}</div>
@@ -397,6 +408,10 @@ function renderDay(d) {
         <button class="pi-edit" onclick="event.stopPropagation();openEdit('${p.id}',${d})" title="수정">✏️</button>
         <span class="pi-arrow" onclick="openSheet('${p.id}',${d})">›</span>
       </div>`;
+    // 드래그 핸들에 터치/마우스 이벤트 부착
+    const handle = div.querySelector('.pi-drag');
+    handle.addEventListener('mousedown', e => startDrag(e, div));
+    handle.addEventListener('touchstart', e => startDrag(e, div), {passive:false});
     sec.appendChild(div);
   });
 }
@@ -688,6 +703,133 @@ mainEl.addEventListener('scroll', () => {
 }, {passive:true});
 
 // 헤더 높이에 맞게 top 동적 조정
+// ── 드래그 & 드롭 (터치 + 마우스) ──
+let dragEl = null, ghostEl = null;
+let dragId = null, dragDay = null;
+let startX = 0, startY = 0, offsetX = 0, offsetY = 0;
+
+function startDrag(e, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  const touch = e.touches ? e.touches[0] : e;
+  dragEl = el;
+  dragId = el.dataset.id;
+  dragDay = parseInt(el.dataset.day);
+
+  const rect = el.getBoundingClientRect();
+  offsetX = touch.clientX - rect.left;
+  offsetY = touch.clientY - rect.top;
+  startX = touch.clientX;
+  startY = touch.clientY;
+
+  // 고스트 생성
+  ghostEl = el.cloneNode(true);
+  ghostEl.className = 'drag-ghost place-item d' + dragDay;
+  ghostEl.style.width = rect.width + 'px';
+  ghostEl.style.height = rect.height + 'px';
+  ghostEl.style.left = rect.left + 'px';
+  ghostEl.style.top = rect.top + 'px';
+  document.body.appendChild(ghostEl);
+
+  el.classList.add('dragging');
+
+  if (e.touches) {
+    document.addEventListener('touchmove', onDragMove, {passive:false});
+    document.addEventListener('touchend', onDragEnd);
+  } else {
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+  }
+}
+
+function onDragMove(e) {
+  e.preventDefault();
+  const touch = e.touches ? e.touches[0] : e;
+  const x = touch.clientX, y = touch.clientY;
+
+  // 고스트 이동
+  ghostEl.style.left = (x - offsetX) + 'px';
+  ghostEl.style.top  = (y - offsetY) + 'px';
+
+  // 드롭 위치 감지
+  ghostEl.style.display = 'none';
+  const target = document.elementFromPoint(x, y);
+  ghostEl.style.display = '';
+
+  // 기존 드롭 표시 제거
+  document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+    el.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+
+  // 가장 가까운 place-item 찾기
+  const overItem = target?.closest('.place-item');
+  if (overItem && overItem !== dragEl) {
+    const rect = overItem.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    overItem.classList.add(y < mid ? 'drag-over-top' : 'drag-over-bottom');
+  }
+}
+
+function onDragEnd(e) {
+  document.removeEventListener('touchmove', onDragMove);
+  document.removeEventListener('touchend', onDragEnd);
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+
+  const touch = e.changedTouches ? e.changedTouches[0] : e;
+  ghostEl?.remove(); ghostEl = null;
+  dragEl?.classList.remove('dragging');
+
+  // 드롭 위치 감지
+  const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  const overItem = target?.closest('.place-item');
+
+  document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+    el.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+
+  if (!overItem || overItem === dragEl || !dragId) { dragEl = null; dragId = null; return; }
+
+  const toDay = parseInt(overItem.dataset.day);
+  const toId  = overItem.dataset.id;
+
+  // 같은 날, 같은 위치면 무시
+  if (dragDay === toDay && dragId === toId) { dragEl = null; dragId = null; return; }
+
+  // 원본 아이템 찾기
+  const fromItems = schedule[dragDay];
+  const itemIdx   = fromItems.findIndex(x => x.id === dragId);
+  if (itemIdx === -1) { dragEl = null; dragId = null; return; }
+  const [moved] = fromItems.splice(itemIdx, 1);
+
+  // 날짜 이동
+  if (dragDay !== toDay) {
+    moved.id = 'd' + toDay + '-' + Date.now(); // 새 ID
+    if (!schedule[toDay]) schedule[toDay] = [];
+  }
+
+  // 드롭 위치 계산
+  const toItems = schedule[toDay];
+  const toIdx   = toItems.findIndex(x => x.id === toId);
+  const rect    = overItem.getBoundingClientRect();
+  const insertAfter = touch.clientY > rect.top + rect.height / 2;
+  toItems.splice(insertAfter ? toIdx + 1 : toIdx, 0, moved);
+
+  // Firebase 저장
+  if (dragDay === toDay) {
+    saveDayToFirebase(toDay);
+  } else {
+    saveDayToFirebase(dragDay);
+    saveDayToFirebase(toDay);
+  }
+
+  renderDay(dragDay);
+  if (dragDay !== toDay) renderDay(toDay);
+
+  dragEl = null; dragId = null; dragDay = null;
+  showToast('📅 이동 완료!');
+}
+
 function showToast(msg) {
   let t = document.getElementById('toast');
   if (!t) {
